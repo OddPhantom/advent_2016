@@ -1,0 +1,5 @@
+rotate right 1 steps
+rotate right 2 steps
+rotate right 3 steps
+rotate right 4 steps
+rotate right 5 steps
