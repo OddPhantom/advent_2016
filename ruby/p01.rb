@@ -1,17 +1,32 @@
 # frozen_string_literal: true
 require_relative 'base'
 require 'pry-byebug'
+require 'set'
 
 class Person
   attr_reader :orientation, :position
   def initialize()
     @orientation = Direction.new(0, 1)
     @position = Location.new(0, 0)
+    @visited = Set.new
   end
 
   def follow_instruction(instruction)
     turn(instruction.turn_direction)
-    move(instruction.count)
+    walk(instruction.count)
+  end
+
+  def walk(count)
+    (1..count).each do |_|
+      @position = Location.new(position.x + orientation.x,
+                               position.y + orientation.y)
+      if @visited.include? @position.to_s
+        puts "First repeat location is #{@position.to_s}, which is #{@position.away}"
+        exit
+      else
+        @visited << @position.to_s
+      end
+    end
   end
 
   def move(count)
