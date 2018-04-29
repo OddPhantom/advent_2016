@@ -1,0 +1,24 @@
+require 'rake/testtask'
+require 'pry-byebug'
+
+Rake::TestTask.new do |t|
+  t.libs << "tests"
+  t.test_files = FileList['tests/test*.rb']
+  t.verbose = true
+end
+
+namespace :advent do
+  desc "run a problem solution"
+  task :run_problem, [:problem_number] do |t, args|
+    raise ArgumentExecption("Pass problem number") if args.problem_number.nil?
+    problem_name = args.problem_number.to_i.to_s.rjust(2, '0')
+    puts "running problem #{problem_name}"
+    require_relative "lib/p#{problem_name}"
+
+    p = get_problem_solver("./data/p#{problem_name}.txt")
+
+    puts "phase 1 #{p.run_phase_1}"
+    puts "phase 2 #{p.run_phase_2}"
+
+  end
+end

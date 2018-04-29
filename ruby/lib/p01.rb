@@ -1,41 +1,52 @@
 # frozen_string_literal: true
 require_relative 'base'
-require 'pry-byebug'
 require 'set'
 
 class Person
-  attr_reader :orientation, :position
-  def initialize()
+  attr_reader :orientation, :position, :walking, :arrived, :visited
+  def initialize(walking)
     @orientation = Direction.new(0, 1)
     @position = Location.new(0, 0)
     @visited = Set.new
+    @walking = walking
+    @arrived = false
   end
 
   def follow_instruction(instruction)
     turn(instruction.turn_direction)
-    walk(instruction.count)
-  end
-
-  def walk(count)
-    (1..count).each do |_|
-      @position = Location.new(position.x + orientation.x,
-                               position.y + orientation.y)
-      if @visited.include? @position.to_s
-        puts "First repeat location is #{@position.to_s}, which is #{@position.away}"
-        exit
-      else
-        @visited << @position.to_s
-      end
+    if walking
+      walk(instruction.count)
+    else
+      move(instruction.count)
     end
   end
 
   def move(count)
-    @position = Location.new(position.x + orientation.x * count,
-                             position.y + orientation.y * count)
+    (1..count).each do |_|
+      @position = Location.new(position.x + orientation.x,
+                               position.y + orientation.y)
+      if walking?
+        if @visited.include? @position.to_s
+          @arrived = true
+          return
+        else
+          @visited << @position.to_s
+        end
+      end
+    end
   end
+
 
   def turn(direction)
     send(direction)
+  end
+
+  def arrived?
+    !!@arrived
+  end
+
+  def walking?
+    !!@walking
   end
 
   private
@@ -77,19 +88,30 @@ end
 
 class Problem01 < ProblemBase
 
-  def initialize
+  def initialize(filename)
+    super(filename)
     @problem = '01'
-    @person = Person.new
   end
 
-  def run
+  def run_phase_1
+    run(false)
+  end
+
+  def run_phase_2
+    run(true)
+  end
+
+  def run(walking)
+    person = Person.new(walking)
+
     data.split(",").map { |step| Instruction.new(step) }.each do |instruction|
-      @person.follow_instruction(instruction)
+      person.follow_instruction(instruction)
+      break if person.arrived?
     end
-    puts  "#{@person.position.away} blocks away at #{@person.position.to_s}"
+    "#{person.position.away} blocks away at #{person.position.to_s}"
   end
 end
 
-p = Problem01.new
-
-p.run
+def get_problem_solver(filename)
+  Problem01.new(filename)
+end
